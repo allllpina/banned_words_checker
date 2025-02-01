@@ -17,5 +17,5 @@ bwcVenv/
 *.sqlite
 *.swp
 
-# Ігнорувати файл Dockerfile (якщо хочеш не копіювати його, хоча це рідкість)
+# Ігнорувати файл Dockerfile
 Dockerfile
