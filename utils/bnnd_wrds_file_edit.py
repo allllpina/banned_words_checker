@@ -68,3 +68,18 @@ class BannedWordsFileEdit:
             # Обробка помилок при видаленні з файлу
             return f"Виникла помилка під час видалення з файлу: {e}"
 
+    def read_words(self):
+        try:
+            # Зчитуємо вміст файлу
+            with open(self.filePath, 'r', encoding='utf-8') as file:
+                content = file.read()
+
+            # Розділяємо слова за символом ';' та фільтруємо порожні елементи
+            words = content.split(';')
+            words = [word for word in words if word.strip()]  # Видаляємо порожні рядки
+
+            return {'length': len(words), "words": words}
+
+        except Exception as e:
+            # Обробка помилок при зчитуванні з файлу
+            return f"Виникла помилка під час зчитування з файлу: {e}"

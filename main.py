@@ -60,3 +60,11 @@ async def remove_banword(request: BanWordEdit):
     except Exception as e:
         # Обробка помилок при видаленні слова
         raise HTTPException(status_code=500, detail=f"Помилка під час видалення слова: {str(e)}")
+    
+@app.get('/get_banwords')
+async def get_banwords():
+    try:
+        result = bwfe.read_words()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Помилка під час  читання списку слів: {str(e)}")
