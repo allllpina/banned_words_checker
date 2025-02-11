@@ -5,9 +5,17 @@ class BannedWordsFileEdit:
 
     def add(self, words, bws):
         try:
+
+            # Перевірка на порожній список
+            if not words:
+                return "Список слів порожній. Немає що додавати."
+
             # Відкриваємо файл у режимі дописування та додаємо нові слова
             with open(self.filePath, 'a', encoding='utf-8') as file:
                 for word in words:
+                    # Якщо словом є пуста стрічка, ми пропускаємо іттерацію
+                    if word == "":
+                        continue
                     file.write(f";{word}")
             
             # Оновлюємо базу заборонених слів
@@ -20,6 +28,11 @@ class BannedWordsFileEdit:
 
     def remove(self, words, bws):
         try:
+            
+            # Перевірка на порожній список
+            if not words:
+                return "Список слів порожній. Немає що видаляти."
+            
             # Зчитуємо вміст файлу
             with open(self.filePath, 'r', encoding='utf-8') as file:
                 content = file.read()
@@ -33,6 +46,8 @@ class BannedWordsFileEdit:
 
             # Видаляємо вказані слова з файлу
             for word in words:
+                if word == "":
+                    continue
                 formatted_word = f";{word}"
                 if formatted_word in updated_content:
                     updated_content = updated_content.replace(formatted_word, "")
