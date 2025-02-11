@@ -2,8 +2,13 @@ import re
 
 
 class TextProcessor:
+    """
+    Клас для обробки тексту, включаючи розширення скорочень та очищення від зайвих символів.
+    """
     def __init__(self):
-        # Скорочення
+        """
+        Ініціалізація словника скорочень.
+        """
         self.contractions = {
             "n't": " not",
             "'d": " would",
@@ -16,21 +21,34 @@ class TextProcessor:
         }
 
     def add_contraction(self, contraction: str, expanded: str) -> None:
-        """Додає нове скорочення до словника."""
+        """
+        Додає нове скорочення до словника.
+        
+        :param contraction: Скорочена форма
+        :param expanded: Розширена форма
+        """
         self.contractions[contraction] = expanded
 
     def preprocess_text(self, text: str) -> str:
-        """Обробляє текст за допомогою попередньої обробки."""
-        # 1. Приведення до нижнього регістру
+        """
+        Обробляє текст шляхом приведення до нижнього регістру, розширення скорочень та очищення від зайвих символів.
+        
+        :param text: Вхідний текст
+        :return: Оброблений текст
+        """
+        # 1. Приведення до нижнього регістру та видалення зайвих пробілів
         text = text.strip().lower()
 
         # 2. Розширення скорочень
         for contraction, expanded in self.contractions.items():
             text = re.sub(r"\b" + re.escape(contraction) + r"\b", expanded, text)
 
-        # 3. Видалення спецсимволів, тегів, чисел
-        text = re.sub(r'<.*?>', '', text)  # Видалення HTML-тегів
-        text = re.sub(r'[^a-z\s]', '', text)  # Видалення не букв та пробілів
+        # 3. Видалення HTML-тегів
+        text = re.sub(r'<.*?>', '', text)
+        
+        # 4. Видалення неалфавітних символів, окрім пробілів
+        text = re.sub(r'[^a-z\s]', '', text)
+        
         return text
 
 
