@@ -24,7 +24,7 @@ text - text to scan
 
 return_translation - wether return a tranlsation of the text in case either "there is no banned words" or "there is no bad context"
 
-threshold - the thrashold of triggering in model
+threshold - the threshold of triggering in model
 ```
 {
   "text": "string",
