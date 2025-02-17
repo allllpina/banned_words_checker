@@ -23,10 +23,13 @@ docker start -i wrds-chckr
 text - text to scan
 
 return_translation - wether return a tranlsation of the text in case either "there is no banned words" or "there is no bad context"
+
+threshold - the thrashold of triggering in model
 ```
 {
-  "text": "string"
-  "return_translation": false 
+  "text": "string",
+  "return_translation": false,
+  "threshold": 0.5
 }
 ```
 #### Response

@@ -29,9 +29,10 @@ except Exception as e:
 @app.post("/scan")
 async def scan(request: ScanRequest):
     try:
+        if request.threshold > 1 or request.threshold < 0:
+            return {"Помилка у пороговому значенні, воно має бути в межах від 0 до 1"}
         # Викликається метод сканування з тексту, наданого користувачем
-
-        result = await bws.scan(request.text, return_translation = request.return_translation)
+        result = await bws.scan(request.text, return_translation = request.return_translation, threshold=request.threshold)
         print(result)  # Виведення результату в консоль для налагодження
         return result  # Повернення результату клієнту
     except Exception as e:
