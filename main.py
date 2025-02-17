@@ -30,7 +30,8 @@ except Exception as e:
 async def scan(request: ScanRequest):
     try:
         # Викликається метод сканування з тексту, наданого користувачем
-        result = await bws.scan(request.text)
+
+        result = await bws.scan(request.text, return_translation = request.return_translation)
         print(result)  # Виведення результату в консоль для налагодження
         return result  # Повернення результату клієнту
     except Exception as e:

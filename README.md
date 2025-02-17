@@ -20,9 +20,13 @@ docker start -i wrds-chckr
 
 ### /scan (POST)
 #### Body
+text - text to scan
+
+return_translation - wether return a tranlsation of the text in case either "there is no banned words" or "there is no bad context"
 ```
 {
   "text": "string"
+  "return_translation": false 
 }
 ```
 #### Response

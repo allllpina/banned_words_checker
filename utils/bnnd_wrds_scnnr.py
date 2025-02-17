@@ -21,10 +21,14 @@ class BannedWordsScanner:
             # Повертаємо повідомлення про помилку, якщо файл не вдалося змінити
             return {"error": f"Не вдалося змінити базу слів: {str(e)}"}
 
-    async def scan(self, text, threshold=0.5):
+    async def scan(self, text, threshold=0.5, return_translation = False):
         try:
             # Асинхронно перевіряємо текст на наявність заборонених слів
-            found = await self.simpleScanner.scan_text(text)
+            # Якщо виставлено параметр `return_translation` то від 'TextScanner' запитується переклад тексту
+            if return_translation:
+                found, translation = await self.simpleScanner.scan_text(text, return_translation = return_translation)
+            else:
+                found = await self.simpleScanner.scan_text(text, return_translation = return_translation)
             
             if found:
                 result = []
@@ -47,10 +51,16 @@ class BannedWordsScanner:
                         return {"error": f"Помилка при аналізі контексту: {str(e)}"}
                 
                 # Якщо знайдено небезпечні слова в контексті, повертаємо їх список
-                return {"message": result} if result else {"message": "Жодне слово не виявлено у небезпечному контексті"}
+                if return_translation:
+                    return {"message": result} if result else {"message": "Жодне слово не виявлено у небезпечному контексті", "translated_text": translation}
+                else:
+                    return {"message": result} if result else {"message": "Жодне слово не виявлено у небезпечному контексті"}
             else:
                 # Якщо заборонених слів не знайдено
-                return {"message": "There is no banned words"}
+                if return_translation:
+                    return {"message": "There is no banned words", "translated_text": translation}
+                else:
+                    return {"message": "There is no banned words"}
         except Exception as e:
             # Обробляємо помилку при скануванні тексту
             return {"error": f"Помилка під час сканування тексту: {str(e)}"}
