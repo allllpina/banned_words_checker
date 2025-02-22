@@ -1,4 +1,3 @@
-import asyncio
 from googletrans import Translator
 from .text_processor import TextProcessor
 
@@ -18,7 +17,7 @@ class TextScanner:
             self.translator = Translator()  # Ініціалізація перекладача
             self.txt_processor = TextProcessor()  # Ініціалізація текстового процесора
         except Exception as e:
-            raise RuntimeError(f"Помилка ініціалізації TextScanner: {str(e)}")
+            raise RuntimeError({"error": f"Error initialisation TextScanner: {str(e)}"})
 
     def set_banned_words_file(self, file):
         """
@@ -27,7 +26,7 @@ class TextScanner:
         try:
             self.banned_words = self._load_banned_words(file)
         except Exception as e:
-            return {"error": f"Не вдалося змінити базу слів: {str(e)}"}
+            return {"error": f"Failed to change database: {str(e)}"}
 
     @staticmethod
     def _load_banned_words(file_path):
@@ -40,25 +39,26 @@ class TextScanner:
                 content = file.read()
             return content.split(';')  # Розділення списку слів
         except FileNotFoundError:
-            raise FileNotFoundError(f"Файл {file_path} не знайдено.")
+            raise FileNotFoundError({"error": f"File '{file_path}' not found."})
         except Exception as e:
-            raise RuntimeError(f"Помилка при завантаженні списку заборонених слів: {str(e)}")
+            raise RuntimeError({"error": f"Error while loading file: {str(e)}"})
 
-    async def scan_text(self, text, context_window=20, return_translation=False):
+    async def scan_text(self, text, language, context_window=20, return_translation=False):
         """
         Асинхронне сканування тексту на заборонені слова.
         
         :param text: Вхідний текст
+        :param language: Мова вхідного тексту
         :param context_window: Кількість символів до та після знайденого слова для контексту
         :param return_translation: Якщо True, повертає також перекладений текст
         :return: Список знайдених слів з контекстом або помилку
         """
         try:
             # Переклад тексту англійською для подальшого аналізу
-            translation = await self.translator.translate(text, src='auto', dest='en')
+            translation = await self.translator.translate(text, src=language, dest='en')
             translated_text = translation.text
         except Exception as e:
-            return {"error": f"Помилка під час перекладу тексту: {str(e)}"}
+            return {"error": f"Error while translating text: {str(e)}"}
 
         try:
             results = []
@@ -86,4 +86,4 @@ class TextScanner:
                 return results, translated_text  # Повернення результатів разом із перекладом
             return results  # Повернення лише результатів
         except Exception as e:
-            return {"error": f"Помилка під час сканування тексту: {str(e)}"}
+            return {"error": f"Error while scanning text: {str(e)}"}

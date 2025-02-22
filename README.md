@@ -8,7 +8,7 @@ docker build -t bnnd-wrds-chckr .
 
 ### DOCKER CONTAINER RUN
 ```
-docker run -it --name wrds-chckr -p 8000:8000 bnnd-wrds-chkr
+docker run -it --name wrds-chckr -p 8000:8000 bnnd-wrds-chckr
 ```
 
 ### DOCKER IMAGE STARTING
@@ -20,16 +20,23 @@ docker start -i wrds-chckr
 
 ### /scan (POST)
 #### Body
-text - text to scan
+__text__ - text to scan
 
-return_translation - wether return a tranlsation of the text in case either "there is no banned words" or "there is no bad context"
+__language__ - text language
 
-threshold - the threshold of triggering in model
+__return_translation__ - whether return a translation of the text in case either "there is no banned words" or "there is no bad context"
+
+__threshold__ - the threshold of triggering in model
+
+__database__ - name of database file
+
 ```
 {
   "text": "string",
+  "language": "string",
   "return_translation": false,
-  "threshold": 0.5
+  "threshold": 0.5,
+  "database": "string"
 }
 ```
 #### Response
@@ -57,12 +64,22 @@ threshold - the threshold of triggering in model
 {
   "words": [
     "string"
-  ]
+  ],
+  "database_name": "string"
 }
 ```
 #### Response
 ```
-"'['word1', 'word2']' успішно додано до файлу!"
+{
+    "added": [
+       "word1",
+       "word2"
+    ],
+    "skipped":  [
+       "word3",
+       "word4"
+    ]
+}
 ```
 
 ### /remove_banword (POST)
@@ -71,7 +88,8 @@ threshold - the threshold of triggering in model
 {
   "words": [
     "string"
-  ]
+  ],
+  "database_name": "string"
 }
 ```
 #### Response
@@ -83,6 +101,59 @@ threshold - the threshold of triggering in model
   ],
   "not_found": [
     "love"
+  ]
+}
+```
+### /get_banwords (GET)
+#### Parameters
+
+__database_name__ _string_ (query)
+
+#### Response
+```
+{
+  'length': "string",
+  "words": [
+    "word1",
+	"word2"
+  ]
+}
+```
+### /create_database (POST)
+#### Body
+```
+{
+  "database_name": "string"
+}
+```
+#### Response
+```
+{
+  "result": "Database 'Lima' successfully created!"
+}
+```
+### /delete_database (POST)
+#### Body
+```
+{
+  "database_name": "string"
+}
+```
+#### Response
+```
+{
+  "result": "Database 'Lima' successfully deleted!"
+}
+```
+### /get_databases (GET)
+#### Parameters
+_None_
+#### Response
+```
+{
+  "databases": [
+    "database1",
+    "database2
   ]
 }
 ```
