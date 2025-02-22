@@ -123,7 +123,7 @@ async def create_database(request: Database):
 async def delete_database(request: Database):
     try:
         # Викликається метод видалення бази даних
-        if request.database_name == DEFAULT_DATABASE:
+        if f"{WORDS_DATABASES}/{request.database_name}" == DEFAULT_DATABASE:
             result = {"error": f"Could not delete default database!"}
         elif not os.path.exists(f"{WORDS_DATABASES}/{request.database_name}"):  # Перевіряємо, чи існує файл
             result = {"error": f"Database '{request.database_name}' does not exist!"}  # Повернення результату клієнту
