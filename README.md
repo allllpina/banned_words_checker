@@ -112,12 +112,10 @@ __database_name__ _string_ (query)
 #### Response
 ```
 {
-  "removed": [
-    "good",
-    "hello",
-  ],
-  "not_found": [
-    "love"
+  'length': "string",
+  "words": [
+    "word1",
+	"word2"
   ]
 }
 ```
