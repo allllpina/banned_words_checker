@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from fastapi import FastAPI, HTTPException
 from utils.bnnd_wrds_scnnr import BannedWordsScanner
-from request_models import ScanRequest, BanWordEdit, Database
+from request_models import ScanRequest, BanWordEdit, Database, NewDatabase
 from utils.bnnd_wrds_file_edit import BannedWordsFileEdit
 
 # Завантаження змінних середовища для конфігурації
@@ -104,15 +104,25 @@ async def get_banwords(database_name: Optional[str] = None):
         raise HTTPException(status_code=500, detail={"error": f"Error while reading words: {str(e)}"})
 
 @app.post("/create_database")
-async def create_database(request: Database):
+async def create_database(request: NewDatabase):
     try:
         # Викликається метод створення бази даних
         if os.path.exists(f"{WORDS_DATABASES}/{request.database_name}"):
             result = {"error": f"Database '{request.database_name}' already exist!"}
         else:
-            with open(f"{WORDS_DATABASES}/{request.database_name}", "w") as f:
-                pass
-            result = {"result": f"Database '{request.database_name}' successfully created!"}
+            if request.template_database:
+                if not os.path.exists(f"{WORDS_DATABASES}/{request.template_database}"):
+                    result = {"error": f"Template database '{request.template_database}' does not exist!"}
+                else:
+                    with open(f"{WORDS_DATABASES}/{request.template_database}", "r") as template_file:
+                        template_content = template_file.read()
+                    with open(f"{WORDS_DATABASES}/{request.database_name}", "w") as target_file:
+                        target_file.write(template_content)
+                    result = {"result": f"Database '{request.database_name}' successfully created!"}
+            else:
+                with open(f"{WORDS_DATABASES}/{request.database_name}", "w") as f:
+                    pass
+                result = {"result": f"Database '{request.database_name}' successfully created!"}
         print(result)  # Виведення результату в консоль для налагодження
         return result  # Повернення результату клієнту
     except Exception as e:
