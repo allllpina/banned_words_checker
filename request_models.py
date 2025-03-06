@@ -12,5 +12,9 @@ class BanWordEdit(BaseModel):
     words: list
     database_name: Optional[str] = None
 
+class NewDatabase(BaseModel):
+    database_name: str
+    template_database: Optional[str] = None
+
 class Database(BaseModel):
     database_name: str
