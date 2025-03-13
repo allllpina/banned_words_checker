@@ -60,17 +60,20 @@ class BannedWordsFileEdit:
             }
 
             updated_content = content  # Робоча копія вмісту файлу
+            tokens = [token for token in updated_content.split(';') if token]
 
             # Видаляємо вказані слова з файлу
             for word in words:
                 if word == "":
                     continue
-                formatted_word = f";{word}"
-                if formatted_word in updated_content:
-                    updated_content = updated_content.replace(formatted_word, "")
+                if word in tokens:
+                    tokens.remove(word)
                     result['removed'].append(word)
                 else:
                     result['not_found'].append(word)
+
+            # Запис тих слів що залишились після чистки у файл
+            updated_content = ";".join(tokens)
 
             # Запис зміненого вмісту у файл ОДИН раз, щоб зменшити кількість операцій введення/виведення
             with open(db_path, 'w', encoding='utf-8') as file:
