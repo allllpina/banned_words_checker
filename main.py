@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from utils.bnnd_wrds_scnnr import BannedWordsScanner
 from request_models import ScanRequest, BanWordEdit, Database, NewDatabase
 from utils.bnnd_wrds_file_edit import BannedWordsFileEdit
@@ -27,32 +28,46 @@ except Exception as e:
     # Обробка помилок при ініціалізації
     raise RuntimeError({"error": f"Error initialisation service: {str(e)}"})
 
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": str(exc.detail)},  # Формат помилки у вигляді { "error": "..." }
+    )
+
 # Маршрут для сканування тексту на наявність заборонених слів
 @app.post("/scan")
 async def scan(request: ScanRequest):
     try:
         if not (0 <= request.threshold <= 1):
-            return {"error": "Bad threshold value, must be between [0..1]"}
+            raise HTTPException(status_code=422, detail = 'Bad threshold value, must be between [0..1]')
 
         # Перевірка бази даних
         database_path = f"{WORDS_DATABASES}/{request.database_name}" if request.database_name else None
         if request.database_name and not os.path.exists(database_path):
-            return {"error": f"Database '{request.database_name}' does not exist!"}
+            raise HTTPException(status_code=500, detail = f"Database '{request.database_name}' does not exist!")
 
         # Якщо вказана база даних, змінюємо її
         if database_path:
             bws.change_words_database(database_path)
 
-        # Викликається метод сканування з тексту, наданого користувачем
-        result = await bws.scan(text=request.text, language=request.language,
-                                return_translation=request.return_translation, threshold=request.threshold)
+        # Виконуємо сканування тексту на заборонені слова
+        result = await bws.scan(
+            text=request.text,
+            language=request.language,
+            return_translation=request.return_translation,
+            threshold=request.threshold
+        )
+
         if database_path:
             bws.change_words_database(DEFAULT_DATABASE)
         print(result)  # Виведення результату в консоль для налагодження
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result  # Повернення результату клієнту
     except Exception as e:
         # Обробка помилок при скануванні тексту
-        raise HTTPException(status_code=500, detail={"error": f"Error while scanning text: {str(e)}"})
+        raise HTTPException(status_code=500, detail=f"Error while scanning text: {str(e)}")
 
 # Маршрут для додавання забороненого слова
 @app.post("/add_banword")
@@ -65,10 +80,12 @@ async def add_banword(request: BanWordEdit):
             result = bwfe.add(DEFAULT_DATABASE, request.words)
             bws.change_words_database(DEFAULT_DATABASE)
         print(result)  # Виведення результату в консоль для налагодження
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result  # Повернення результату клієнту
     except Exception as e:
         # Обробка помилок при додаванні слова
-        raise HTTPException(status_code=500, detail={"error": f"Error while adding words: {str(e)}"})
+        raise HTTPException(status_code=500, detail=f"Error while adding words: {str(e)}")
 
 # Маршрут для видалення забороненого слова
 @app.post("/remove_banword")
@@ -81,10 +98,12 @@ async def remove_banword(request: BanWordEdit):
             result = bwfe.remove(DEFAULT_DATABASE, request.words)
             bws.change_words_database(DEFAULT_DATABASE)
         print(result)  # Виведення результату в консоль для налагодження
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result  # Повернення результату клієнту
     except Exception as e:
         # Обробка помилок при видаленні слова
-        raise HTTPException(status_code=500, detail={"error": f"Error while deleting words: {str(e)}"})
+        raise HTTPException(status_code=500, detail=f"Error while deleting words: {str(e)}")
     
 @app.get('/get_banwords')
 async def get_banwords(database_name: Optional[str] = None):
@@ -98,10 +117,12 @@ async def get_banwords(database_name: Optional[str] = None):
         else:
             result = bwfe.read_words(DEFAULT_DATABASE)
         print(result)  # Виведення результату в консоль для налагодження
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result  # Повернення результату клієнту
     except Exception as e:
         # Обробка помилок при виводі всіх слів
-        raise HTTPException(status_code=500, detail={"error": f"Error while reading words: {str(e)}"})
+        raise HTTPException(status_code=500, detail=f"Error while reading words: {str(e)}")
 
 @app.post("/create_database")
 async def create_database(request: NewDatabase):
@@ -124,10 +145,12 @@ async def create_database(request: NewDatabase):
                     pass
                 result = {"result": f"Database '{request.database_name}' successfully created!"}
         print(result)  # Виведення результату в консоль для налагодження
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result  # Повернення результату клієнту
     except Exception as e:
         # Обробка помилок при створенні бази даних
-        raise HTTPException(status_code=500, detail={"error": f"Error while creating database: {str(e)}"})
+        raise HTTPException(status_code=500, detail=f"Error while creating database: {str(e)}")
 
 @app.post("/delete_database")
 async def delete_database(request: Database):
@@ -141,10 +164,12 @@ async def delete_database(request: Database):
             os.remove(f"{WORDS_DATABASES}/{request.database_name}")
             result = {"result": f"Database '{request.database_name}' successfully deleted!"}  # Повернення результату клієнту
         print(result)  # Виведення результату в консоль для налагодження
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result  # Повернення результату клієнту
     except Exception as e:
         # Обробка помилок при видаленні бази даних
-        raise HTTPException(status_code=500, detail={"error": f"Error while deleting database: {str(e)}"})
+        raise HTTPException(status_code=500, detail=f"Error while deleting database: {str(e)}")
 
 @app.get("/get_databases")
 async def get_databases():
@@ -152,7 +177,9 @@ async def get_databases():
         # Викликається метод виводу всіх баз даних
         result = {"databases": os.listdir(WORDS_DATABASES)}
         print(result)  # Виведення результату в консоль для налагодження
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         return result  # Повернення результату клієнту
     except Exception as e:
         # Обробка помилок при виводі всіх слів
-        raise HTTPException(status_code=500, detail={"error": f"Error while listing databases: {str(e)}"})
+        raise HTTPException(status_code=500, detail=f"Error while listing databases: {str(e)}")
